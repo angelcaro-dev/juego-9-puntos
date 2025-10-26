@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de los 9 Puntos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+            max-width: 1400px;
+            width: 100%;
+            display: flex;
+            gap: 0;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-section {
+            flex: 1;
+            padding: 40px;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .sidebar {
+            width: 400px;
+            padding: 40px;
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            border-left: 1px solid #e2e8f0;
+        }
+
+        h1 {
+            color: #1e293b;
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+            text-align: left;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 1em;
+            font-weight: 400;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .instructions {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .instructions h3 {
+            color: #334155;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .instructions h3::before {
+            content: "📋";
+            font-size: 1.2em;
+        }
+
+        .instructions p {
+            color: #64748b;
+            line-height: 1.7;
+            font-size: 0.95em;
+        }
+
+        .game-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #gameCanvas {
+            border: 3px solid #3b82f6;
+            border-radius: 16px;
+            cursor: crosshair;
+            background: white;
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        #gameCanvas:hover {
+            box-shadow: 0 15px 50px rgba(59, 130, 246, 0.25);
+        }
+
+        .stats {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            padding: 20px;
+            border-radius: 16px;
+            color: white;
+            text-align: center;
+        }
+
+        .stats-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stats-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button {
+            padding: 16px 28px;
+            font-size: 1.05em;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        #resetBtn {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        #resetBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        #resetBtn:active {
+            transform: translateY(0);
+        }
+
+        #resetBtn::before {
+            content: "🔄";
+            font-size: 1.2em;
+        }
+
+        .message {
+            text-align: center;
+            font-size: 1.05em;
+            font-weight: 600;
+            padding: 20px;
+            border-radius: 16px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s ease;
+            line-height: 1.6;
+        }
+
+        .message:empty {
+            display: none;
+        }
+
+        .message.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+            animation: successPulse 0.6s ease;
+        }
+
+        .message.error {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+            animation: errorShake 0.5s ease;
+        }
+
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .footer {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.85em;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid #e2e8f0;
+            }
+
+            h1 {
+                text-align: center;
+            }
+
+            .subtitle {
+                text-align: center;
+            }
+            
+            #gameCanvas {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+
+            .game-section, .sidebar {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-section">
+            <div class="game-container">
+                <canvas id="gameCanvas" width="700" height="700"></canvas>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <div>
+                <h1>Puzzle de los 9 Puntos</h1>
+                <p class="subtitle">Un desafío clásico de pensamiento lateral</p>
+            </div>
+
+            <div class="instructions">
+                <h3>Cómo Jugar</h3>
+                <p>Conecta todos los 9 puntos usando una línea continua de <strong>4 tramos rectos</strong>.</p>
+            </div>
+
+            <div class="stats">
+                <div class="stats-label">Líneas Dibujadas</div>
+                <div class="stats-value" id="lineCount">0</div>
+            </div>
+
+            <div class="message" id="message"></div>
+
+            <div class="controls">
+                <button id="resetBtn">Reintentar</button>
+            </div>
+
+            <div class="footer">
+                💡 Pista: La solución requiere pensar creativamente
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración del canvas y puntos
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const resetBtn = document.getElementById('resetBtn');
+        const messageDiv = document.getElementById('message');
+        const lineCountDiv = document.getElementById('lineCount');
+
+        // Configuración del juego
+        const POINT_RADIUS = 14;
+        const POINT_COLOR = '#3b82f6';
+        const POINT_HOVER_COLOR = '#2563eb';
+        const POINT_VISITED_COLOR = '#10b981';
+        const POINT_UNVISITED_COLOR = '#ef4444';
+        const LINE_COLOR = '#1e293b';
+        const LINE_WIDTH = 4;
+
+        // Posición de los 9 puntos (3x3)
+        const GRID_SIZE = 3;
+        const SPACING = 175;
+        const OFFSET_X = 175;
+        const OFFSET_Y = 175;
+
+        let points = [];
+        let lines = [];
+        let currentPath = [];
+        let isDrawing = false;
+        let tempMousePoint = null;
+
+        // Inicializar los puntos
+        function initializePoints() {
+            points = [];
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    points.push({
+                        x: OFFSET_X + col * SPACING,
+                        y: OFFSET_Y + row * SPACING,
+                        visited: false,
+                        index: row * GRID_SIZE + col
+                    });
+                }
+            }
+        }
+
+        // Dibujar un punto
+        function drawPoint(point, color = POINT_COLOR) {
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Sombra del punto
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 2;
+        }
+
+        // Dibujar una línea
+        function drawLine(from, to) {
+            ctx.shadowColor = 'transparent';
+            ctx.beginPath();
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.strokeStyle = LINE_COLOR;
+            ctx.lineWidth = LINE_WIDTH;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+        }
+
+        // Dibujar todo el canvas
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.shadowColor = 'transparent';
+            
+            // Dibujar líneas confirmadas
+            for (let i = 0; i < lines.length - 1; i++) {
+                drawLine(lines[i], lines[i + 1]);
+            }
+            
+            // Dibujar línea temporal (del último punto al cursor)
+            if (isDrawing && tempMousePoint && lines.length > 0) {
+                ctx.beginPath();
+                ctx.moveTo(lines[lines.length - 1].x, lines[lines.length - 1].y);
+                ctx.lineTo(tempMousePoint.x, tempMousePoint.y);
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = LINE_WIDTH;
+                ctx.setLineDash([10, 10]);
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            // Dibujar puntos
+            points.forEach(point => {
+                let color = POINT_COLOR;
+                if (point.visited) {
+                    color = POINT_VISITED_COLOR;
+                }
+                drawPoint(point, color);
+            });
+            
+            ctx.shadowColor = 'transparent';
+        }
+
+        // Verificar si un punto está en una línea
+        function isPointOnLine(point, lineStart, lineEnd) {
+            const distance = pointToLineDistance(point, lineStart, lineEnd);
+            return distance < POINT_RADIUS * 2; // Tolerancia generosa para asegurar detección
+        }
+
+        // Calcular distancia de un punto a una línea
+        function pointToLineDistance(point, lineStart, lineEnd) {
+            const A = point.x - lineStart.x;
+            const B = point.y - lineStart.y;
+            const C = lineEnd.x - lineStart.x;
+            const D = lineEnd.y - lineStart.y;
+            
+            const dot = A * C + B * D;
+            const lenSq = C * C + D * D;
+            
+            if (lenSq === 0) {
+                // lineStart y lineEnd son el mismo punto
+                return Math.sqrt(A * A + B * B);
+            }
+            
+            let param = dot / lenSq;
+            
+            let xx, yy;
+            
+            if (param < 0) {
+                xx = lineStart.x;
+                yy = lineStart.y;
+            } else if (param > 1) {
+                xx = lineEnd.x;
+                yy = lineEnd.y;
+            } else {
+                xx = lineStart.x + param * C;
+                yy = lineStart.y + param * D;
+            }
+            
+            const dx = point.x - xx;
+            const dy = point.y - yy;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // Marcar puntos visitados por las líneas
+        function markVisitedPoints() {
+            points.forEach(point => point.visited = false);
+            
+            for (let i = 0; i < lines.length - 1; i++) {
+                const start = lines[i];
+                const end = lines[i + 1];
+                
+                points.forEach(point => {
+                    if (isPointOnLine(point, start, end)) {
+                        point.visited = true;
+                    }
+                });
+            }
+        }
+
+        // Actualizar contador de líneas
+        function updateLineCount() {
+            const count = Math.max(0, lines.length - 1);
+            lineCountDiv.textContent = count + ' / 4';
+        }
+
+        // Verificar solución
+        function checkSolution() {
+            if (lines.length !== 5) {
+                return;
+            }
+            
+            markVisitedPoints();
+            
+            const unvisitedPoints = points.filter(p => !p.visited);
+            
+            if (unvisitedPoints.length === 0) {
+                showMessage('🎉 ¡Enhorabuena, lo conseguiste! Has resuelto el puzzle correctamente.', true);
+            } else {
+                // Resaltar puntos no visitados
+                draw();
+                unvisitedPoints.forEach(point => {
+                    drawPoint(point, POINT_UNVISITED_COLOR);
+                });
+                
+                const totalUnvisited = unvisitedPoints.length;
+                const plural = totalUnvisited === 1 ? 'punto' : 'puntos';
+                showMessage(`⚠️ Lo siento, hay ${totalUnvisited} ${plural} sin cruzar.`, false);
+            }
+        }
+
+        // Mostrar mensaje
+        function showMessage(text, isSuccess) {
+            messageDiv.textContent = text;
+            messageDiv.className = 'message ' + (isSuccess ? 'success' : 'error');
+        }
+
+        // Resetear el juego
+        function reset() {
+            lines = [];
+            currentPath = [];
+            isDrawing = false;
+            tempMousePoint = null;
+            initializePoints();
+            draw();
+            messageDiv.textContent = '';
+            messageDiv.className = 'message';
+            updateLineCount();
+        }
+
+        // Event Listeners
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
+            
+            const clickPoint = { x: mouseX, y: mouseY };
+            
+            if (!isDrawing) {
+                // Primer punto - puede ser en cualquier parte
+                isDrawing = true;
+                lines = [clickPoint];
+                currentPath = [clickPoint];
+                messageDiv.textContent = '';
+                messageDiv.className = 'message';
+            } else {
+                // Verificar que no exceda 4 tramos (5 puntos)
+                if (lines.length >= 5) {
+                    showMessage('⚠️ Ya has completado las 4 líneas. Usa "Reintentar" para volver a empezar.', false);
+                    return;
+                }
+                
+                lines.push(clickPoint);
+                currentPath.push(clickPoint);
+            }
+            
+            markVisitedPoints();
+            draw();
+            updateLineCount();
+            
+            // Si ya tiene 5 puntos (4 tramos), verificar automáticamente
+            if (lines.length === 5) {
+                isDrawing = false;
+                tempMousePoint = null;
+                checkSolution();
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDrawing && lines.length > 0 && lines.length < 5) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mouseX = (e.clientX - rect.left) * scaleX;
+                const mouseY = (e.clientY - rect.top) * scaleY;
+                
+                tempMousePoint = { x: mouseX, y: mouseY };
+                draw();
+            }
+        });
+
+        resetBtn.addEventListener('click', reset);
+
+        // Inicializar el juego
+        initializePoints();
+        draw();
+        updateLineCount();
+    </script>
+</body>
+</html>
