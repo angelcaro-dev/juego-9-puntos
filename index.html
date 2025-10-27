@@ -15,6 +15,7 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
             min-height: 100vh;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -26,7 +27,8 @@
             background: rgba(255, 255, 255, 0.98);
             border-radius: 24px;
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
-            max-width: 1400px;
+            max-width: 1300px;
+            max-height: 90vh;
             width: 100%;
             display: flex;
             gap: 0;
@@ -45,20 +47,21 @@
         }
 
         .sidebar {
-            width: 400px;
-            padding: 40px;
+            width: 360px;
+            padding: 35px;
             background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 25px;
             border-left: 1px solid #e2e8f0;
+            overflow-y: auto;
         }
 
         h1 {
             color: #1e293b;
-            font-size: 2.5em;
+            font-size: 2.2em;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             letter-spacing: -0.5px;
             text-align: left;
         }
@@ -276,7 +279,7 @@
     <div class="container">
         <div class="game-section">
             <div class="game-container">
-                <canvas id="gameCanvas" width="700" height="700"></canvas>
+                <canvas id="gameCanvas" width="550" height="550"></canvas>
             </div>
         </div>
         
@@ -327,9 +330,9 @@
 
         // Posición de los 9 puntos (3x3)
         const GRID_SIZE = 3;
-        const SPACING = 175;
-        const OFFSET_X = 175;
-        const OFFSET_Y = 175;
+        const SPACING = 140;
+        const OFFSET_X = 135;
+        const OFFSET_Y = 135;
 
         let points = [];
         let lines = [];
